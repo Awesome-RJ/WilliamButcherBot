@@ -86,7 +86,7 @@ async def filters_re(_, message):
         chat_id = message.chat.id
         list_of_filters = await get_filters_names(chat_id)
         for word in list_of_filters:
-            pattern = r"( |^|[^\w])" + re.escape(word) + r"( |$|[^\w])"
+            pattern = f"( |^|[^\\w]){re.escape(word)}( |$|[^\\w])"
             if re.search(pattern, text, flags=re.IGNORECASE):
                 _filter = await get_filter(chat_id, word)
                 data_type = _filter['type']
@@ -96,6 +96,5 @@ async def filters_re(_, message):
                 else:
                     await message.reply_sticker(data)
                 return
-    # NOTE When the first letter of the message is an emoji it throws an error, that's why using this
     except Exception:
         pass

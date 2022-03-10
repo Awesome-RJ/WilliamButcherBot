@@ -36,7 +36,7 @@ async def url(_, message):
         await m.edit(output)
         os.remove(filename)
     except Exception as e:
-        print(str(e))
+        print(e)
         await m.edit(str(e))
         return
 
@@ -66,14 +66,14 @@ async def tg(_, message):
         await m.edit(output)
         os.remove(fn)
     except Exception as e:
-        print(str(e))
+        print(e)
         await m.edit(str(e))
         return
 
 
 async def download(url):
     ext = url.split(".")[-1]
-    filename = str(randint(1000, 9999)) + "." + ext
+    filename = f'{str(randint(1000, 9999))}.{ext}'
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             if resp.status == 200:

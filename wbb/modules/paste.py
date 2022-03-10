@@ -19,10 +19,9 @@ async def paste_func(_, message):
             link = await paste(content)
             await m.delete()
             await app.send_photo(
-                    message.chat.id,
-                    photo=link + "/preview.png",
-                    caption=link
-                    )
+                message.chat.id, photo=f'{link}/preview.png', caption=link
+            )
+
 
         elif message.reply_to_message.document:
             if message.reply_to_message.document.file_size > 1048576:
@@ -34,10 +33,9 @@ async def paste_func(_, message):
             link = await paste(i.read())
             await m.delete()
             await app.send_photo(
-                    message.chat.id,
-                    photo=link + "/preview.png",
-                    caption=link
-                    )
+                message.chat.id, photo=f'{link}/preview.png', caption=link
+            )
+
             os.remove(doc_file)
     else:
         await message.reply_text("Reply To A Message With /paste")

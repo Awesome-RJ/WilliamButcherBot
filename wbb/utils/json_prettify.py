@@ -1,12 +1,10 @@
 async def json_object_prettify(objecc):
     dicc = objecc.__dict__
-    output = ""
-    for key, value in dicc.items():
-        if key == "pinned_message" or key == "photo" \
-                or key == "_" or key == "_client":
-            continue
-        output += f"**{key}:** `{value}`\n"
-    return output
+    return "".join(
+        f"**{key}:** `{value}`\n"
+        for key, value in dicc.items()
+        if key not in ["pinned_message", "photo", "_", "_client"]
+    )
 
 
 async def json_prettify(data):

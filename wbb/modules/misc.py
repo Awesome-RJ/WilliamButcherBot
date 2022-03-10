@@ -51,18 +51,14 @@ async def get_id(_, message):
         username = message.text.split(None, 1)[1]
         user_id = (await app.get_users(username)).id
         msg = f"{username}'s ID is `{user_id}`"
-        await message.reply_text(msg)
-
-    elif len(message.command) == 1 and not message.reply_to_message:
+    elif not message.reply_to_message:
         chat_id = message.chat.id
         msg = f"{message.chat.title}'s ID is `{chat_id}`"
-        await message.reply_text(msg)
-
-    elif len(message.command) == 1 and message.reply_to_message:
+    else:
         from_user_id = message.reply_to_message.from_user.id
         from_user_mention = message.reply_to_message.from_user.mention
         msg = f"{from_user_mention}'s ID is `{from_user_id}`"
-        await message.reply_text(msg)
+    await message.reply_text(msg)
 
 # Random
 
@@ -79,8 +75,7 @@ async def random(_, message):
     try:
         if 1 < int(length) < 1000:
             alphabet = string.ascii_letters + string.digits
-            password = ''.join(secrets.choice(alphabet) for i in
-                               range(int(length)))
+            password = ''.join(secrets.choice(alphabet) for _ in range(int(length)))
             await message.reply_text(f"`{password}`")
         else:
             await message.reply_text('Specify A Length Between 1-1000')
@@ -150,7 +145,7 @@ async def cheat(_, message):
         await m.edit(f"`{data}`")
     except Exception as e:
         await m.edit(str(e))
-        print(str(e))
+        print(e)
 
 # Weather
 
@@ -223,7 +218,7 @@ async def json_fetch(_, message):
             await message.reply_text(f"[OUTPUT_TOO_LONG]({link})", disable_web_page_preview=True)
     except Exception as e:
         await message.reply_text(str(e))
-        print(str(e))
+        print(e)
 
 
 @app.on_message(filters.command('bun'))
@@ -232,6 +227,5 @@ async def bunn(_, message):
         await message.reply_to_message.reply_sticker('CAACAgUAAx0CWIlO9AABARyRYBhyjKXFATVhu7AGQwip3TzSFiMAAuMBAAJ7usBUIu2xBtXTmuweBA')
         await app.send_message(message.chat.id, text="Eat Bun")
         return
-    if not message.reply_to_message:
-        await message.reply_sticker('CAACAgUAAx0CWIlO9AABARyRYBhyjKXFATVhu7AGQwip3TzSFiMAAuMBAAJ7usBUIu2xBtXTmuweBA')
-        await app.send_message(message.chat.id, text="Eat Bun")
+    await message.reply_sticker('CAACAgUAAx0CWIlO9AABARyRYBhyjKXFATVhu7AGQwip3TzSFiMAAuMBAAJ7usBUIu2xBtXTmuweBA')
+    await app.send_message(message.chat.id, text="Eat Bun")

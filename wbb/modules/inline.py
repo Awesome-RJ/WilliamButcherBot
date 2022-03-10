@@ -314,5 +314,5 @@ async def inline_query_handler(client, query):
             )
 
     except Exception as e:
-        print(str(e) + "InLine")
+        print(f'{str(e)}InLine')
         return

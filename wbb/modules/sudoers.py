@@ -67,14 +67,13 @@ async def bot_sys_stats():
     cpu = psutil.cpu_percent(interval=0.5)
     mem = psutil.virtual_memory().percent
     disk = psutil.disk_usage("/").percent
-    stats = f'''
+    return f'''
 {USERBOT_USERNAME}@William
 ------------------
 Uptime: {formatter.get_readable_time((bot_uptime))}
 CPU: {cpu}%
 RAM: {mem}%
 Disk: {disk}%'''
-    return stats
 
 
 @app.on_message(
@@ -257,11 +256,9 @@ async def broadcast_message(_, message):
         await message.reply_text("**Usage**:\n/broadcast [MESSAGE]")
         return
     text = message.text.split(None, 1)[1]
-    sent = 0
-    chats = []
     schats = await get_served_chats()
-    for chat in schats:
-        chats.append(int(chat["chat_id"]))
+    chats = [int(chat["chat_id"]) for chat in schats]
+    sent = 0
     for i in chats:
         try:
             await app.send_message(i, text=text)

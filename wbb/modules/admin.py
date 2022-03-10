@@ -372,17 +372,16 @@ async def ban_deleted_accounts(_, message):
         permissions = await member_permissions(chat_id, from_user_id)
         if "can_restrict_members" in permissions or from_user_id in SUDOERS:
             deleted_users = []
-            banned_users = 0
             async for i in app.iter_chat_members(chat_id):
                 if i.user.is_deleted:
                     deleted_users.append(i.user.id)
-            if len(deleted_users) > 0:
+            if deleted_users:
+                banned_users = 0
                 for deleted_user in deleted_users:
                     try:
                         await message.chat.kick_member(deleted_user)
                     except Exception as e:
-                        print(str(e))
-                        pass
+                        print(e)
                     banned_users += 1
                 await message.reply_text(f"Banned {banned_users} Deleted Accounts")
             else:
@@ -392,7 +391,7 @@ async def ban_deleted_accounts(_, message):
             await message.reply_text("You Don't Have Enough Permissions")
     except Exception as e:
         await message.reply_text(str(e))
-        print(str(e))
+        print(e)
 
 
 @app.on_message(filters.command("warn") & ~filters.edited)
@@ -416,26 +415,25 @@ async def warn_user(_, message):
                 await message.reply_text("Can't warn an admin.")
             elif user_id == from_user_id:
                 await message.reply_text("I wouldn't do that if i were you.")
-            else:
-                if user_id in await list_members(chat_id):
-                    warns = await get_warn(chat_id, await int_to_alpha(user_id))
-                    if warns:
-                        warns = warns['warns']
-                    else:
-                        warn = {"warns": 1}
-                        await add_warn(chat_id, await int_to_alpha(user_id), warn)
-                        await message.reply_text(f"Warned {mention} !, 1/3 warnings now.")
-                        return
-                    if warns >= 3:
-                        await message.chat.kick_member(user_id)
-                        await message.reply_text(f"Number of warns of {mention} exceeded, Banned!")
-                        await remove_warns(chat_id, await int_to_alpha(user_id))
-                    else:
-                        warn = {"warns": warns+1}
-                        await add_warn(chat_id, await int_to_alpha(user_id), warn)
-                        await message.reply_text(f"Warned {mention} !, {warns+1}/3 warnings now.")
+            elif user_id in await list_members(chat_id):
+                warns = await get_warn(chat_id, await int_to_alpha(user_id))
+                if warns:
+                    warns = warns['warns']
                 else:
-                    await message.reply_text("This user isn't here.")
+                    warn = {"warns": 1}
+                    await add_warn(chat_id, await int_to_alpha(user_id), warn)
+                    await message.reply_text(f"Warned {mention} !, 1/3 warnings now.")
+                    return
+                if warns >= 3:
+                    await message.chat.kick_member(user_id)
+                    await message.reply_text(f"Number of warns of {mention} exceeded, Banned!")
+                    await remove_warns(chat_id, await int_to_alpha(user_id))
+                else:
+                    warn = {"warns": warns+1}
+                    await add_warn(chat_id, await int_to_alpha(user_id), warn)
+                    await message.reply_text(f"Warned {mention} !, {warns+1}/3 warnings now.")
+            else:
+                await message.reply_text("This user isn't here.")
         else:
             await message.reply_text("You don't have enough permissions.")
     except Exception as e:

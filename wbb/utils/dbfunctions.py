@@ -33,27 +33,20 @@ async def get_notes_count() -> dict:
 
 async def _get_notes(chat_id: int) -> Dict[str, int]:
     _notes = await notesdb.find_one({"chat_id": chat_id})
-    if _notes:
-        _notes = _notes["notes"]
-    else:
-        _notes = {}
+    _notes = _notes["notes"] if _notes else {}
     return _notes
 
 
 async def get_note_names(chat_id: int) -> List[str]:
     _notes = []
-    for note in await _get_notes(chat_id):
-        _notes.append(note)
+    _notes.extend(iter(await _get_notes(chat_id)))
     return _notes
 
 
 async def get_note(chat_id: int, name: str) -> Union[bool, dict]:
     name = name.lower().strip()
     _notes = await _get_notes(chat_id)
-    if name in _notes:
-        return _notes[name]
-    else:
-        return False
+    return _notes[name] if name in _notes else False
 
 
 async def save_note(chat_id: int, name: str, note: dict):
@@ -111,27 +104,20 @@ async def get_filters_count() -> dict:
 
 async def _get_filters(chat_id: int) -> Dict[str, int]:
     _filters = await filtersdb.find_one({"chat_id": chat_id})
-    if _filters:
-        _filters = _filters['filters']
-    else:
-        _filters = {}
+    _filters = _filters['filters'] if _filters else {}
     return _filters
 
 
 async def get_filters_names(chat_id: int) -> List[str]:
     _filters = []
-    for _filter in await _get_filters(chat_id):
-        _filters.append(_filter)
+    _filters.extend(iter(await _get_filters(chat_id)))
     return _filters
 
 
 async def get_filter(chat_id: int, name: str) -> Union[bool, dict]:
     name = name.lower().strip()
     _filters = await _get_filters(chat_id)
-    if name in _filters:
-        return _filters[name]
-    else:
-        return False
+    return _filters[name] if name in _filters else False
 
 
 async def save_filter(chat_id: int, name: str, _filter: dict):
@@ -171,12 +157,9 @@ async def delete_filter(chat_id: int, name: str) -> bool:
 
 
 async def int_to_alpha(user_id: int) -> str:
-    alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
-    text = ""
     user_id = str(user_id)
-    for i in user_id:
-        text += alphabet[int(i)]
-    return text
+    alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    return "".join(alphabet[int(i)] for i in user_id)
 
 
 async def alpha_to_int(user_id_alphabet: str) -> int:
@@ -207,10 +190,7 @@ async def get_warns_count() -> dict:
 
 async def get_warns(chat_id: int) -> Dict[str, int]:
     warns = await warnsdb.find_one({"chat_id": chat_id})
-    if warns:
-        warns = warns['warns']
-    else:
-        warns = {}
+    warns = warns['warns'] if warns else {}
     return warns
 
 
@@ -276,10 +256,7 @@ async def get_karmas_count() -> dict:
 
 async def get_karmas(chat_id: int) -> Dict[str, int]:
     karma = await karmadb.find_one({"chat_id": chat_id})
-    if karma:
-        karma = karma['karma']
-    else:
-        karma = {}
+    karma = karma['karma'] if karma else {}
     return karma
 
 
@@ -320,8 +297,7 @@ async def get_served_chats() -> list:
     if not chats:
         return []
     chats_list = []
-    for chat in await chats.to_list(length=1000000000):
-        chats_list.append(chat)
+    chats_list.extend(iter(await chats.to_list(length=1000000000)))
     return chats_list
 
 
@@ -373,19 +349,13 @@ async def remove_gban_user(user_id: int):
 
 async def _get_lovers(chat_id: int):
     lovers = await coupledb.find_one({"chat_id": chat_id})
-    if lovers:
-        lovers = lovers["couple"]
-    else:
-        lovers = {}
+    lovers = lovers["couple"] if lovers else {}
     return lovers
 
 
 async def get_couple(chat_id: int, date: str):
     lovers = await _get_lovers(chat_id)
-    if date in lovers:
-        return lovers[date]
-    else:
-        return False
+    return lovers[date] if date in lovers else False
 
 
 async def save_couple(chat_id: int, date: str, couple: dict):

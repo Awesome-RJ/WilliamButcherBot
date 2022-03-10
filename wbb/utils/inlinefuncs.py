@@ -53,8 +53,8 @@ async def inline_help_func(__HELP__):
 
 async def alive_function(answers):
     buttons = InlineKeyboard(row_width=2)
-    bot_state = 'Dead' if not await app.get_me() else 'Alive'
-    ubot_state = 'Dead' if not await app2.get_me() else 'Alive'
+    bot_state = 'Alive' if await app.get_me() else 'Dead'
+    ubot_state = 'Alive' if await app2.get_me() else 'Dead'
     buttons.add(
         InlineKeyboardButton(
             'Stats',
@@ -268,40 +268,36 @@ async def webss(url):
     except TypeError:
         return
     await m.delete()
-    a = []
     pic = InlineQueryResultPhoto(
         photo_url=screenshot['url'],
         caption=(f"`{url}`\n__Took {round(end_time - start_time)} Seconds.__")
     )
-    a.append(pic)
-    return a
+    return [pic]
 
 
 # Used my api key here, don't fuck with it
 async def shortify(url):
     if "." not in url:
         return
-    header = {
-        "Authorization": "Bearer ad39983fa42d0b19e4534f33671629a4940298dc",
-        'Content-Type': 'application/json'
-    }
     payload = {
         "long_url": f"{url}"
     }
     payload = json.dumps(payload)
+    header = {
+        "Authorization": "Bearer ad39983fa42d0b19e4534f33671629a4940298dc",
+        'Content-Type': 'application/json'
+    }
     async with aiohttp.ClientSession() as session:
         async with session.post("https://api-ssl.bitly.com/v4/shorten", headers=header, data=payload) as resp:
             data = await resp.json()
     msg = f"**Original Url:** {url}\n**Shortened Url:** {data['link']}"
-    a = []
     b = InlineQueryResultArticle(
         title="Link Shortened!",
         description=data['link'],
         input_message_content=InputTextMessageContent(
             msg, disable_web_page_preview=True)
     )
-    a.append(b)
-    return a
+    return [b]
 
 
 async def torrent_func(answers, text):
@@ -314,7 +310,7 @@ async def torrent_func(answers, text):
         size = results[i].size
         seeds = results[i].seeds
         leechs = results[i].leechs
-        upload_date = results[i].uploaded + " Ago"
+        upload_date = f'{results[i].uploaded} Ago'
         magnet = results[i].magnet
         caption = f"""
 **Title:** __{title}__
@@ -424,7 +420,7 @@ async def eval_func(answers, text, user_id):
             ))
 
         return answers
-    text = text[0:-1]
+    text = text[:-1]
     start_time = time()
     result = await eval_executor_func(text)
     output = result[1]
@@ -475,9 +471,7 @@ async def github_repo_func(answers, text):
     results = await asyncio.gather(fetch(URL), fetch(URL2))
     r = results[0]
     r1 = results[1]
-    commits = 0
-    for developer in r1:
-        commits += developer['contributions']
+    commits = sum(developer['contributions'] for developer in r1)
     buttons = InlineKeyboard(row_width=1)
     buttons.add(
         InlineKeyboardButton(
@@ -532,38 +526,30 @@ async def tg_search_func(answers, text, user_id):
             ))
 
         return answers
-    text = text[0:-1]
+    text = text[:-1]
     async for message in app2.search_global(text, limit=49):
         buttons = InlineKeyboard(row_width=2)
         buttons.add(
             InlineKeyboardButton(
-                text="Origin",
-                url=message.link if message.link else "https://t.me/telegram"
+                text="Origin", url=message.link or "https://t.me/telegram"
             ),
             InlineKeyboardButton(
-                text="Search again",
-                switch_inline_query_current_chat="search"
-            )
+                text="Search again", switch_inline_query_current_chat="search"
+            ),
         )
-        name = message.from_user.first_name if message.from_user.first_name else "NO NAME"
-        caption = f"""
-**Query:** {text}
-**Name:** {str(name)} [`{message.from_user.id}`]
-**Chat:** {str(message.chat.title)} [`{message.chat.id}`]
-**Date:** {ctime(message.date)}
-**Text:** >>
 
-{message.text.markdown if message.text else message.caption if message.caption else '[NO_TEXT]'}
-"""
+        name = message.from_user.first_name or "NO NAME"
+        caption = f"""\x1f**Query:** {text}\x1f**Name:** {str(name)} [`{message.from_user.id}`]\x1f**Chat:** {str(message.chat.title)} [`{message.chat.id}`]\x1f**Date:** {ctime(message.date)}\x1f**Text:** >>\x1f\x1f{message.text.markdown if message.text else message.caption or '[NO_TEXT]'}\x1f"""
+
         result = InlineQueryResultArticle(
             title=name,
-            description=message.text if message.text else "[NO_TEXT]",
+            description=message.text or "[NO_TEXT]",
             reply_markup=buttons,
             input_message_content=InputTextMessageContent(
-                caption,
-                disable_web_page_preview=True
-            )
+                caption, disable_web_page_preview=True
+            ),
         )
+
         answers.append(result)
     return answers
 
@@ -587,17 +573,15 @@ async def music_inline_func(answers, query):
             )
         )
         return answers
-    messages_ids_and_duration = []
-    for f_ in messages:
-        messages_ids_and_duration.append(
-            {"message_id": f_.message_id, "duration": f_.audio.duration if f_.audio.duration else 0}
-        )
+    messages_ids_and_duration = [
+        {"message_id": f_.message_id, "duration": f_.audio.duration or 0}
+        for f_ in messages
+    ]
+
     messages = list(
         {v["duration"]: v for v in messages_ids_and_duration}.values())
-    messages_ids = []
-    for ff_ in messages:
-        messages_ids.append(ff_['message_id'])
-    messages = await app.get_messages(chat_id, messages_ids[0:48])
+    messages_ids = [ff_['message_id'] for ff_ in messages]
+    messages = await app.get_messages(chat_id, messages_ids[:48])
     for message_ in messages:
         answers.append(
             InlineQueryResultCachedDocument(

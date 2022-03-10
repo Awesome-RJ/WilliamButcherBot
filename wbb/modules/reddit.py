@@ -24,5 +24,5 @@ async def reddit(_, message):
 **PostLink:** {link}"""
         await message.reply_photo(photo=image, caption=caption)
     except Exception as e:
-        print(str(e))
+        print(e)
         await message.reply_text(str(e))

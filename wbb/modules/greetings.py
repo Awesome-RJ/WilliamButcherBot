@@ -56,22 +56,15 @@ async def welcome(_, message: Message):
             f"{captcha_answer}",
             callback_data=f"pressed_button {captcha_answer} {member.id}"
         )
-        temp_keyboard_1 = [correct_button]  # Button row 1
-        temp_keyboard_2 = []  # Botton row 2
-        for i in range(3):
-            temp_keyboard_1.append(
-                InlineKeyboardButton(
+        temp_keyboard_1 = [correct_button]
+        temp_keyboard_1.extend(InlineKeyboardButton(
                     f"{wrong_answers[i]}",
                     callback_data=f"pressed_button {wrong_answers[i]} {member.id}"
-                )
-            )
-        for i in range(3, 7):
-            temp_keyboard_2.append(
-                InlineKeyboardButton(
+                ) for i in range(3))
+        temp_keyboard_2 = [InlineKeyboardButton(
                     f"{wrong_answers[i]}",
                     callback_data=f"pressed_button {wrong_answers[i]} {member.id}"
-                )
-            )
+                ) for i in range(3, 7)]
         shuffle(temp_keyboard_1)
         keyboard = [temp_keyboard_1, temp_keyboard_2]
         shuffle(keyboard)
@@ -133,10 +126,10 @@ async def callback_query_welcome_button(_, callback_query):
             for ii in answers_dicc:
                 if ii['user_id'] == pending_user_id:
                     answers_dicc.remove(ii)
-        return
     else:
         await callback_query.answer("This is not for you")
-        return
+
+    return
 
 
 async def kick_restricted_after_delay(delay, button_message: Message, user: User):
